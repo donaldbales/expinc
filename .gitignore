@@ -53,3 +53,33 @@ dkms.conf
 
 # debug information files
 *.dwo
+./.git/hooks/pre-commit.sample
+./.git/hooks/applypatch-msg.sample
+./.git/hooks/sendemail-validate.sample
+./.git/hooks/pre-rebase.sample
+./.git/hooks/prepare-commit-msg.sample
+./.git/hooks/post-update.sample
+./.git/hooks/pre-push.sample
+./.git/hooks/fsmonitor-watchman.sample
+./.git/hooks/pre-receive.sample
+./.git/hooks/update.sample
+./.git/hooks/pre-applypatch.sample
+./.git/hooks/pre-merge-commit.sample
+./.git/hooks/commit-msg.sample
+./.git/hooks/push-to-checkout.sample
+
+# my log files
+*.err
+trace
+
+# my binaries
+./altcharset
+./dynallmem
+./dynallmem2
+./dynallmem3
+./ncurses1
+./ncurses2
+./ncurses3
+./ncurses4
+./sscanf_example
+
