@@ -1,10 +1,7 @@
 #include <errno.h>
-//#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <sys/stat.h>
-//#include <unistd.h>
 
 /*
 gcc fixed_length_ascii_file.c -g -o fixed_length_ascii_file
@@ -58,7 +55,6 @@ int main(int argc, char const *argv[])
 	strcpy(w.phone_number, "630-555-1212");
 	strcpy(w.email_address, "don@donaldbales.com");
 
-//	(void) fwrite(file, &w, sizeof(r));
 	(void) fwrite(((void *)&w), 1, sizeof(w), file);
 
 	if (fclose(file) == EOF)
@@ -73,8 +69,6 @@ int main(int argc, char const *argv[])
 		fprintf(stderr, "open file %s errno %d\n", argv[1], errno);
 		exit(EXIT_FAILURE);
 	}
-
-//	n = read(file, &r, sizeof(r));
 
 	n = fread(((void *)&r), 1, sizeof(r), file);
 	if (n == -1)
