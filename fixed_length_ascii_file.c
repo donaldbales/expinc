@@ -1,16 +1,16 @@
 #include <errno.h>
-#include <fcntl.h>
+//#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <unistd.h>
+//#include <sys/stat.h>
+//#include <unistd.h>
 
 /*
-gcc fixed_length_text_file.c -g -o fixed_length_text_file
-splint +posixlib fixed_length_text_file.c
-fixed_length_text_file fixed_length_text_file.bin
-hexdump -C fixed_length_text_file.txt 
+gcc fixed_length_ascii_file.c -g -o fixed_length_ascii_file
+splint +posixlib fixed_length_ascii_file.c
+fixed_length_ascii_file fixed_length_ascii_file.bin
+hexdump -C fixed_length_ascii_file.txt 
 */
 
 struct RECORD 
@@ -25,19 +25,17 @@ struct RECORD
 
 int main(int argc, char const *argv[])
 {
-	int fd = -1;
+	FILE *file = NULL;
 	ssize_t n = -1;
 	struct RECORD r, w;
 	int i;
 	if (argc != 2)
 	{
-		fprintf(stderr, "Usage: fixed_length_binary_file [FILE]\n");
+		fprintf(stderr, "Usage: fixed_length_ascii_file [FILE]\n");
 		exit(EXIT_FAILURE);
 	}
-	fd = open(argv[1], \
-			O_CREAT | O_WRONLY | O_TRUNC, \
-			S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH); /* rw-rw-rw- */
-	if (fd == -1)
+	file = fopen(argv[1], "w");
+	if (file == NULL)
 	{
 		fprintf(stderr, "open file %s errno %d", argv[1], errno);
 		exit(EXIT_FAILURE);
@@ -60,23 +58,25 @@ int main(int argc, char const *argv[])
 	strcpy(w.phone_number, "630-555-1212");
 	strcpy(w.email_address, "don@donaldbales.com");
 
-	(void) write(fd, &w, sizeof(r));
+//	(void) fwrite(file, &w, sizeof(r));
+	(void) fwrite(((void *)&w), 1, sizeof(w), file);
 
-	if (close(fd) == -1)
+	if (fclose(file) == EOF)
 	{
 		fprintf(stderr, "close file %s errno %d\n", argv[1], errno);
 		exit(EXIT_FAILURE);
 	}
 
-	fd = open(argv[1], O_RDONLY);
-	if (fd == -1)
+	file = fopen(argv[1], "r");
+	if (file == NULL)
 	{
 		fprintf(stderr, "open file %s errno %d\n", argv[1], errno);
 		exit(EXIT_FAILURE);
 	}
 
-	n = read(fd, &r, sizeof(r));
+//	n = read(file, &r, sizeof(r));
 
+	n = fread(((void *)&r), 1, sizeof(r), file);
 	if (n == -1)
 	{
 		fprintf(stderr, "read file error %s\n", argv[1]);
@@ -89,6 +89,7 @@ int main(int argc, char const *argv[])
 	printf("Phone number: %s\n", r.phone_number);
 	printf("Email Address: %s\n", r.email_address);
 
+	(void) fclose(file);
 
 	return 0;
 }
