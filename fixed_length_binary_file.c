@@ -1,21 +1,19 @@
-#define _XOPEN_SOURCE
-#define __USE_XOPEN
+#define _XOPEN_SOURCE // for strptime()
 #include <errno.h>
-#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <time.h>
-#include <unistd.h>
 
 /*
 gcc fixed_length_binary_file.c -g -o fixed_length_binary_file
-
 splint +posixlib +trytorecover fixed_length_binary_file.c
-
-hexdump -C flbf.bin
+fixed_length_binary_file fixed_length_binary_file.bin
+hexdump -C fixed_length_binary_file.bin
 */
+
+// Here so splint sees it
+char *strptime(const char *restrict s, const char *restrict format, struct tm *restrict tm);
 
 // Now let's use the return value from the date
 struct RECORD 
@@ -30,17 +28,17 @@ struct RECORD
 
 int main(int argc, char const *argv[])
 {
-	int fd = -1;
-	int fi = -1;
+	char *datein = "01/01/1980";
+	char *dateout; 
+	char *p;
+	FILE *fd = NULL;
+	FILE *fi = NULL;
+	int i = 0;
 	int n = -1;
+	size_t DATE = 30;
 	struct RECORD r;
 	struct RECORD w;
-	char *p;
-	char buffer[1024];
-	size_t DATE = 30;
 	struct tm datetm;
-	char *datein = "01/01/1980";
-	char *dateout = calloc(DATE, 1);
 	time_t seconds_since_epoch = -1;
 
 	if (argc != 2)
@@ -48,21 +46,13 @@ int main(int argc, char const *argv[])
 		fprintf(stderr, "Usage: fixed_length_binary_file [FILE]\n");
 		exit(EXIT_FAILURE);
 	}
-	fd = open(argv[1], \
-			O_CREAT | O_WRONLY | O_TRUNC, \
-			S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH); 
-	if (fd == -1)
+	fd = fopen(argv[1], "w"); 
+	if (fd == NULL)
 	{
 		fprintf(stderr, "open file %s errno %d", argv[1], errno);
 		exit(EXIT_FAILURE);
 	}
-	// can I cheat and use a pointer ike I did 20 years ago?
-	p = &w;
-	int i;
-//# ifndef S_SPLINT_S
-	for (i=0; i<(int)sizeof(w); i++)
-		*(p + i) = 0;
-//# endif
+
 /*
 	// This is needed to clear the garbage out of memory
 	for (int i=0; i<sizeof(w.first_name); i++)
@@ -76,10 +66,16 @@ int main(int argc, char const *argv[])
 		w.email_address[i] = '\0';
 	w.nl = '\n';
 */
+	// Can I use a pointer like I did 20 years ago?
+	p = ((void *)&w);
+	for (i=0; i<(int)sizeof(w); i++)
+		*(p + i) = '\0';
+	w.nl = '\n';
+
 	strcpy(w.first_name, "Donald");
 	strcpy(w.last_name, "Bales");
 
-	// Had to initialize this so it could be addressesd properly
+	// Had to initialize this so it could be addressed properly
 	datetm.tm_sec = 0;
 	datetm.tm_min = 0;
 	datetm.tm_hour = 0;
@@ -92,7 +88,7 @@ int main(int argc, char const *argv[])
 
 	printf("datein: %s\n", datein);
 
-	strptime(datein, "%m/%d/%Y", &datetm);
+	(void) strptime(datein, "%m/%d/%Y", &datetm);
 
 	printf("datetm.tm_sec: %d\n", datetm.tm_sec);
 	printf("datetm.tm_min: %d\n", datetm.tm_min);
@@ -114,33 +110,23 @@ int main(int argc, char const *argv[])
 
 	printf("sizeof(struct RECORD): %ld\n", sizeof(struct RECORD));
 	printf("sizeof(w): %ld\n", sizeof(w));
-	write(fd, &w, sizeof(w));
+	
+	(void) fwrite(((void *)&w), 1, sizeof(w), fd);
 
-	if (close(fd) == -1)
+	if (fclose(fd) == EOF)
 	{
 		fprintf(stderr, "close file %s errno %d\n", argv[1], errno);
 		exit(EXIT_FAILURE);
 	}
 
-	fi = open(argv[1], O_RDONLY);
-	if (fi == -1)
+	fi = fopen(argv[1], "r");
+	if (fi == NULL)
 	{
 		fprintf(stderr, "open file %s errno %d\n", argv[1], errno);
 		exit(EXIT_FAILURE);
 	}
-/*  Don't seem to need this
-	for (int i=0; i<sizeof(r.first_name); i++)
-		r.first_name[i] = '\0';
-	for (int i=0; i<sizeof(r.last_name); i++)
-		r.last_name[i] = '\0';
-	r.birth_date = 0L;
-	for (int i=0; i<sizeof(r.phone_number); i++)
-		r.phone_number[i] = '\0';
-	for (int i=0; i<sizeof(r.email_address); i++)
-		r.email_address[i] = '\0';
-	r.nl = '\n';
-*/
-	n = read(fi, &r, sizeof(r));
+
+	n = fread(((void *)&r), 1, sizeof(r), fi);
 	printf("Number of bytes read: %d\n", n);
 	printf("sizeof(r): %ld\n", sizeof(r));
 
@@ -170,12 +156,14 @@ int main(int argc, char const *argv[])
 	printf("datetm.tm_wday: %d\n", datetm.tm_wday);
 	printf("datetm.tm_yday: %d\n", datetm.tm_yday);
 
+	dateout = calloc(DATE, 1);
 	(void) strftime(dateout, DATE, "%m/%d/%Y", &datetm);
-	printf("Birth date: %s\n", dateout);
 
+	printf("Birth date: %s\n", dateout);
 	printf("Phone number: %s\n", r.phone_number);
 	printf("Email Address: %s\n", r.email_address);
 
-	close(fi);
+	(void) fclose(fi);
+	free(dateout);
 	return 0;
 }
