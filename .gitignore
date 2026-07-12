@@ -85,4 +85,5 @@ ncurses2
 ncurses3
 ncurses4
 sscanf_example
+variable_length_delimited_ascii_file
 variables
