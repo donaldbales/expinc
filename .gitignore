@@ -73,15 +73,16 @@ dkms.conf
 trace
 
 # my binaries
-./altcharset
-./dynallmem
-./dynallmem2
-./dynallmem3
-./fixed_length_ascii_file
-./fixed_length_binary_file
-./ncurses1
-./ncurses2
-./ncurses3
-./ncurses4
-./sscanf_example
-
+altcharset
+dates
+dynallmem
+dynallmem2
+dynallmem3
+fixed_length_ascii_file
+fixed_length_binary_file
+ncurses1
+ncurses2
+ncurses3
+ncurses4
+sscanf_example
+variables

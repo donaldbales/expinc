@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include "ncurses4.h"
 
 // Test tabbing between fields
 /*
@@ -68,7 +69,7 @@ char *mvfld(const int y, const int x, const int l)
 	//fprintf(stderr, "*mvfld:fallthru: %s\n\n", field);
 	return field;
 }
-
+/*
 struct LABEL {
 	int y;
 	int x;
@@ -95,7 +96,7 @@ struct CURSOR {
 	int y;
 	int x;
 };
-
+*/
 int main(/*@unused@*/int argc, /*@unused@*/ char *argv[])
 {
 	MEVENT mevent = { 0, 0, 0, 0, 0 };
