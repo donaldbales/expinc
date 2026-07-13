@@ -80,6 +80,7 @@ dynallmem2
 dynallmem3
 fixed_length_ascii_file
 fixed_length_binary_file
+gdbm_file
 ncurses1
 ncurses2
 ncurses3
